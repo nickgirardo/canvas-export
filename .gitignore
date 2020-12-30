@@ -1,0 +1,12 @@
+# external packages
+node_modules
+
+# build products
+dist
+
+# Vim swap files
+*.swp
+*.swo
+
+# MacOS garbage
+.DS_Store
