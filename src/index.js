@@ -1,5 +1,6 @@
 import { createFFmpeg } from '@ffmpeg/ffmpeg';
-import { dataURItoU8A } from './js/util';
+import { dataURItoU8A } from './js/Util';
+import { setup, drawFrame } from './js/GreenSquareDemo';
 
 const framerate = 30;
 // Four second loop (integer seconds for now)
@@ -17,23 +18,7 @@ const ffmpeg = createFFmpeg({ log: true, logger });
 const loadWait = ffmpeg.load();
 
 const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
 const player = document.getElementById('player');
-
-// This function draws framaes to the canvas
-const drawCanvasFrame = frameNumber => {
-  const cubeSize = 100;
-  const offset = Math.sin((Math.PI * 2 / totalFrames) * frameNumber) * 400;
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'green';
-  ctx.fillRect(
-    (canvas.width / 2) - (cubeSize / 2),
-    (canvas.height / 2) - (cubeSize / 2) + offset,
-    100,
-    100
-  );
-};
 
 // All of the heavy lifting from ffmpeg happens here
 const render = async frames => {
@@ -62,9 +47,11 @@ const render = async frames => {
 const exec = async() => {
   const range = [...Array(totalFrames).keys()];
 
+  const setupData = setup(canvas);
+
   // Populate canvas frames into u8array for ffmpeg to consume
   const frames = range.map(f => {
-    drawCanvasFrame(f);
+    drawFrame(f, totalFrames, setupData);
     return dataURItoU8A(canvas.toDataURL());
   });
 
@@ -76,4 +63,5 @@ const exec = async() => {
   player.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
 };
 
+// Attaching this to window here so we can easily call it off of e.g. a button click
 window.exec = exec;
